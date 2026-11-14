@@ -1,6 +1,5 @@
 import http from 'node:http';
 import { createReadStream, existsSync, statSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
@@ -19,7 +18,12 @@ const sessions = new Map();
 const attempts = new Map();
 const MIME = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.css':'text/css; charset=utf-8', '.svg':'image/svg+xml', '.png':'image/png', '.ico':'image/x-icon', '.woff2':'font/woff2', '.json':'application/json; charset=utf-8' };
 
-function safeEqualText(a, b) {\n  const left = Buffer.from(a);\n  const right = Buffer.from(b);\n  return left.length === right.length && timingSafeEqual(left, right);\n}\nfunction send(res, status, data, headers = {}) {
+function safeEqualText(a, b) {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+function send(res, status, data, headers = {}) {
   res.writeHead(status, { 'content-type':'application/json; charset=utf-8', 'cache-control':'no-store', ...headers });
   res.end(JSON.stringify(data));
 }
