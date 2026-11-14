@@ -26,7 +26,11 @@ function send(res, status, data, headers = {}) {
   res.end(JSON.stringify(data));
 }
 function cookies(req) {
-  return Object.fromEntries((req.headers.cookie || '').split(';').map(v => v.trim().split(/=(.*)/s)).filter(v => v.length === 2));
+  return Object.fromEntries((req.headers.cookie || '').split(';').map(v => {
+    const part = v.trim();
+    const index = part.indexOf('=');
+    return index > 0 ? [part.slice(0, index), part.slice(index + 1)] : null;
+  }).filter(Boolean));
 }
 async function body(req) {
   let raw = '';
