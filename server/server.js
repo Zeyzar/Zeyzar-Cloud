@@ -64,8 +64,8 @@ async function handleApi(req, res, url) {
     try { input = await body(req); } catch { return send(res, 400, { error:'Invalid request.' }); }
     const submittedUser = String(input.username || '');
     const submittedPass = String(input.password || '');
-    const userOk = submittedUser.length === USERNAME.length && timingSafeEqual(Buffer.from(submittedUser), Buffer.from(USERNAME));
-    const passOk = submittedPass.length === PASSWORD.length && timingSafeEqual(Buffer.from(submittedPass), Buffer.from(PASSWORD));
+    const userOk = safeEqualText(submittedUser, USERNAME);
+    const passOk = safeEqualText(submittedPass, PASSWORD);
     if (!userOk || !passOk) {
       state.count += 1;
       if (state.count >= 5) { state.count = 0; state.until = now + 5 * 60 * 1000; }
@@ -99,7 +99,7 @@ const server = http.createServer(async (req, res) => {
   let file = path.resolve(DIST, `.${requested}`);
   if (!file.startsWith(DIST + path.sep) && file !== path.join(DIST, 'index.html')) return send(res, 403, { error:'Forbidden.' });
   if (!existsSync(file) || !statSync(file).isFile()) file = path.join(DIST, 'index.html');
-  res.writeHead(200, { 'content-type':MIME[path.extname(file)] || 'application/octet-stream', 'x-content-type-options':'nosniff', 'referrer-policy':'strict-origin-when-cross-origin' });
+  res.writeHead(200, { 'content-type':MIME[path.extname(file)] || 'application/octet-stream', 'cache-control':'no-cache', 'x-content-type-options':'nosniff', 'x-frame-options':'DENY', 'referrer-policy':'strict-origin-when-cross-origin', 'content-security-policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" });
   createReadStream(file).pipe(res);
 });
 
